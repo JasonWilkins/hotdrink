@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>hd.stream test</title>
+    <link rel="stylesheet" href="app.css" type="text/css" />
+    <script src="../../build/hotdrink.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+    <h1>hd.stream test</h1>
+
+    <div id="content"></div>
+
+    <br />
+
+    <div class="block">
+        <div><label>Stream A</label>
+        <input id="A" type="text" /><input type="button" value="Send" onclick="doA()" /><span id="Aout"></span></div>
+    <div class="block">
+        <div><label>Stream B</label>
+        <input id="B" type="text" /><input type="button" value="Send" onclick="doB()" /><span id="Bout"></span></div>
+    </div>
+    <div class="block">
+        <div><label>Stream C</label>
+        <input id="C" type="text" readonly/><input type="button" value="Receive" onclick="doC()"/></div>
+    </div>
+
+</body>
+</html>

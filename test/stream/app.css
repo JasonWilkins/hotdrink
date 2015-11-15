@@ -1,0 +1,11 @@
+﻿body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+span {
+    font-style: italic;
+}
+
+.block label {
+     display: inline-block; width: 100px; text-align: right; 
+}
