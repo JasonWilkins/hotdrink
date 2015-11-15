@@ -16,7 +16,7 @@ TANGLE_DIR      := tangle
 # Module definitions
 
 MODULES         := utility reactive graph model dfa plan enable system bind \
-                   async hd qunit compile-dfa fn-worker
+                   async stream hd qunit compile-dfa fn-worker 
 
 utility_LOC     := hd/
 utility_UNITS   := adt helpers console schedule api
@@ -57,6 +57,9 @@ async_LOC       := hd/
 async_UNITS     := worker ajax
 async_DEPS      := utility reactive
 
+stream_LOC      := hd/
+stream_UNITS    := collections stream
+
 hd_UNITS        := api
 hd_DEPS         := utility reactive model graph plan enable bind system
 
@@ -85,7 +88,7 @@ howto_RES    := style.css collapse.js spinner.gif
 
 TARGETS          := hotdrink hotpdf qunit compile-dfa fn-worker
 
-hotdrink_MODS    := utility reactive graph model dfa plan enable system bind async hd
+hotdrink_MODS    := utility reactive graph model dfa plan enable system bind async stream hd
 
 hotpdf_MODS      := utility reactive graph model dfa plan enable system hd
 
