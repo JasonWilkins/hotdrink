@@ -1,7 +1,7 @@
 var hd;
 (function (hd) {
     var stream;
-    (function (stream) {
+    (function (stream_1) {
         var Ready = (function () {
             function Ready() {
             }
@@ -18,27 +18,31 @@ var hd;
                 this.gather = null;
                 this.readyThis = null;
                 this.readyFunc = null;
-                this.streams = null;
+                this.adjacency = null;
+                this.dups = [this];
             }
             Stream.prototype.send = function (item) {
-                this.mailbox.enqueue(item);
+                collections.arrays.forEach(this.dups, function (dup) {
+                    dup.mailbox.enqueue(item);
+                    return true;
+                });
                 if (this.gather) {
                     try {
                         this.gather();
                     }
                     catch (ex) {
-                        exHandler(this.streams, ex);
+                        exHandler(this.adjacency, ex);
                     }
                 }
             };
             Stream.prototype.kernel = function (a, b) {
                 var readyThis = this;
                 var readyFunc = (b instanceof Function) ? b : null;
-                this.streams = (a instanceof Array) ? a : [];
-                this.streams.concat([this]);
-                for (var i = 0; i < this.streams.length; i++) {
-                    this.streams[i].readyThis = readyThis;
-                    this.streams[i].readyFunc = readyFunc;
+                this.adjacency = (a instanceof Array) ? a : [];
+                this.adjacency.concat([this]);
+                for (var i = 0; i < this.adjacency.length; i++) {
+                    this.adjacency[i].readyThis = readyThis;
+                    this.adjacency[i].readyFunc = readyFunc;
                 }
             };
             Stream.prototype.receive = function (func) {
@@ -53,38 +57,49 @@ var hd;
             Stream.prototype.isReady = function () {
                 return !this.mailbox.isEmpty();
             };
+            Stream.prototype.sharedCopy = function () {
+                var stream = new Stream();
+                this.mailbox.forEach(function (item) {
+                    stream.mailbox.enqueue(item);
+                    return true;
+                });
+                var merge = this.dups.concat(stream.dups);
+                stream.dups = merge;
+                this.dups = merge;
+                return stream;
+            };
             return Stream;
         })();
-        stream.Stream = Stream;
-        function receive(streams, func) {
-            for (var i = 0; i < streams.length; i++) {
-                if (streams[i].gather)
+        stream_1.Stream = Stream;
+        function receive(adjacency, func) {
+            for (var i = 0; i < adjacency.length; i++) {
+                if (adjacency[i].gather)
                     throw "Assertion Failed: Already Blocking";
             }
             function gather() {
                 var isReady = true;
-                for (var i = 0; i < streams.length; i++) {
-                    isReady = isReady && streams[i].isReady();
+                for (var i = 0; i < adjacency.length; i++) {
+                    isReady = isReady && adjacency[i].isReady();
                 }
                 if (isReady) {
                     var items = [];
-                    for (var i = 0; i < streams.length; i++) {
-                        items[i] = streams[i].mailbox.dequeue();
-                        streams[i].gather = null;
+                    for (var i = 0; i < adjacency.length; i++) {
+                        items[i] = adjacency[i].mailbox.dequeue();
+                        adjacency[i].gather = null;
                     }
                     func.apply(void 0, items);
                     throw new Ready;
                 }
                 else {
-                    for (var i = 0; i < streams.length; i++) {
-                        streams[i].gather = gather;
+                    for (var i = 0; i < adjacency.length; i++) {
+                        adjacency[i].gather = gather;
                     }
                     throw new Waiting;
                 }
             }
             gather();
         }
-        stream.receive = receive;
+        stream_1.receive = receive;
         function invoke(args, method) {
             try {
                 var result = method.apply(void 0, args);
@@ -93,28 +108,28 @@ var hd;
                 exHandler(getStreamArgs(args), ex);
             }
         }
-        stream.invoke = invoke;
+        stream_1.invoke = invoke;
         function getStreamArgs() {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i - 0] = arguments[_i];
             }
-            var streams;
+            var adjacency;
             var j = 0;
             for (var i = 0; i < args.length; i++) {
                 if (args[i] instanceof Stream) {
-                    streams[j++] = args[i];
+                    adjacency[j++] = args[i];
                 }
             }
-            return streams;
+            return adjacency;
         }
-        function exHandler(streams, ex) {
+        function exHandler(adjacency, ex) {
             if (ex instanceof Waiting) {
             }
             else if (ex instanceof Ready) {
                 // continue
-                if (streams && streams.length > 0 && streams[0].readyThis && streams[0].readyFunc)
-                    streams[0].readyThis.receive(streams[0].readyFunc);
+                if (adjacency && adjacency.length > 0 && adjacency[0].readyThis && adjacency[0].readyFunc)
+                    adjacency[0].readyThis.receive(adjacency[0].readyFunc);
             }
             else {
                 // rethrow
@@ -123,4 +138,4 @@ var hd;
         }
     })(stream = hd.stream || (hd.stream = {}));
 })(hd || (hd = {}));
-//# sourceMappingURL=Stream.js.map
+//# sourceMappingURL=stream.js.map
